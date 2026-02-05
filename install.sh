@@ -107,7 +107,6 @@ merge_settings() {
   "hooks": {
     "PreCompact": [
       {
-        "matcher": {},
         "hooks": [
           {
             "type": "command",
@@ -119,7 +118,6 @@ merge_settings() {
     ],
     "SessionStart": [
       {
-        "matcher": {},
         "hooks": [
           {
             "type": "command",
@@ -154,10 +152,10 @@ merge_settings_jq() {
     .hooks.PreCompact //= [] |
     .hooks.SessionStart //= [] |
     (if (.hooks.PreCompact | map(select(.hooks[]?.command == "~/.claude/hooks/pre-compact.sh")) | length) == 0
-     then .hooks.PreCompact += [{"matcher": {}, "hooks": [{"type": "command", "command": "~/.claude/hooks/pre-compact.sh", "timeout": 10000}]}]
+     then .hooks.PreCompact += [{"hooks": [{"type": "command", "command": "~/.claude/hooks/pre-compact.sh", "timeout": 10000}]}]
      else . end) |
     (if (.hooks.SessionStart | map(select(.hooks[]?.command == "~/.claude/hooks/session-start.sh")) | length) == 0
-     then .hooks.SessionStart += [{"matcher": {}, "hooks": [{"type": "command", "command": "~/.claude/hooks/session-start.sh", "timeout": 5000}]}]
+     then .hooks.SessionStart += [{"hooks": [{"type": "command", "command": "~/.claude/hooks/session-start.sh", "timeout": 5000}]}]
      else . end)
     ' "${SETTINGS_FILE}" > "${tmp}" && mv "${tmp}" "${SETTINGS_FILE}"
 
@@ -183,7 +181,7 @@ pre_exists = any(
     for h in entry.get('hooks', [])
 )
 if not pre_exists:
-    pre_compact.append({'matcher': {}, 'hooks': [{'type': 'command', 'command': '~/.claude/hooks/pre-compact.sh', 'timeout': 10000}]})
+    pre_compact.append({'hooks': [{'type': 'command', 'command': '~/.claude/hooks/pre-compact.sh', 'timeout': 10000}]})
 
 ss_exists = any(
     h.get('command') == '~/.claude/hooks/session-start.sh'
@@ -191,7 +189,7 @@ ss_exists = any(
     for h in entry.get('hooks', [])
 )
 if not ss_exists:
-    session_start.append({'matcher': {}, 'hooks': [{'type': 'command', 'command': '~/.claude/hooks/session-start.sh', 'timeout': 5000}]})
+    session_start.append({'hooks': [{'type': 'command', 'command': '~/.claude/hooks/session-start.sh', 'timeout': 5000}]})
 
 with open('${tmp}', 'w') as f:
     json.dump(settings, f, indent=2)

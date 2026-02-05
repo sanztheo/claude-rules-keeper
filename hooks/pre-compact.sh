@@ -135,7 +135,7 @@ main() {
 
     if [[ -n "${stdin_data}" ]]; then
         session_id=$(read_stdin_json_field "session_id" "${stdin_data}")
-        compact_type=$(read_stdin_json_field "compact_type" "${stdin_data}")
+        compact_type=$(read_stdin_json_field "trigger" "${stdin_data}")
     fi
 
     # Read current task
