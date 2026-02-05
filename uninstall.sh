@@ -147,7 +147,19 @@ with open('${tmp}', 'w') as f:
     success "Rules removed from CLAUDE.md"
 }
 
-# --- Step 4: Remove CLI symlink ---
+# --- Step 4: Remove context-guard skill ---
+
+remove_skill() {
+    local skill_dir="${CLAUDE_DIR}/skills/context-guard"
+    if [[ -d "${skill_dir}" ]]; then
+        rm -rf "${skill_dir}"
+        success "Skill context-guard removed"
+    else
+        warn "No context-guard skill found"
+    fi
+}
+
+# --- Step 5: Remove CLI symlink ---
 
 remove_cli() {
     if [[ -f "${BIN_DIR}/ccg" ]]; then
@@ -206,6 +218,7 @@ main() {
     remove_hooks
     remove_settings_hooks
     remove_claude_rules
+    remove_skill
     remove_cli
     remove_guard_dir
 

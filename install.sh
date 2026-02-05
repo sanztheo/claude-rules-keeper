@@ -4,7 +4,7 @@ set -euo pipefail
 # claude-compact-guard installer
 # Usage: curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-compact-guard/main/install.sh | bash
 
-readonly VERSION="1.0.0"
+readonly VERSION="1.1.0"
 readonly CLAUDE_DIR="${HOME}/.claude"
 readonly GUARD_DIR="${CLAUDE_DIR}/compact-guard"
 readonly HOOKS_DIR="${CLAUDE_DIR}/hooks"
@@ -13,6 +13,7 @@ readonly SETTINGS_FILE="${CLAUDE_DIR}/settings.json"
 readonly CLAUDE_MD="${CLAUDE_DIR}/CLAUDE.md"
 readonly BIN_DIR="${HOME}/.local/bin"
 
+readonly SKILLS_DIR="${CLAUDE_DIR}/skills"
 readonly GUARD_MARKER_START="<!-- CLAUDE-COMPACT-GUARD:START -->"
 
 readonly REPO_URL="https://raw.githubusercontent.com/sanztheo/claude-compact-guard/main"
@@ -46,7 +47,7 @@ atomic_write() {
 
 create_directories() {
     info "Creating directory structure..."
-    mkdir -p "${GUARD_DIR}" "${BACKUPS_DIR}" "${HOOKS_DIR}" "${BIN_DIR}"
+    mkdir -p "${GUARD_DIR}" "${BACKUPS_DIR}" "${HOOKS_DIR}" "${BIN_DIR}" "${SKILLS_DIR}/context-guard"
     success "Directories created"
 }
 
@@ -216,7 +217,32 @@ merge_settings_sed() {
     echo '  }'
 }
 
-# --- Step 5: Append rules to CLAUDE.md ---
+# --- Step 5: Install context-guard skill ---
+
+install_skill() {
+    info "Installing context-guard skill..."
+
+    local skill_dest="${SKILLS_DIR}/context-guard/SKILL.md"
+
+    local script_dir=""
+    if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+        script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+    fi
+
+    if [[ -n "${script_dir}" && -f "${script_dir}/skills/context-guard/SKILL.md" ]]; then
+        cp "${script_dir}/skills/context-guard/SKILL.md" "${skill_dest}"
+    else
+        curl -fsSL "${REPO_URL}/skills/context-guard/SKILL.md" -o "${skill_dest}" 2>/dev/null || true
+    fi
+
+    if [[ -f "${skill_dest}" ]]; then
+        success "Skill context-guard installed"
+    else
+        warn "Could not install skill (manual install: copy skills/context-guard/SKILL.md to ~/.claude/skills/context-guard/)"
+    fi
+}
+
+# --- Step 6: Append rules to CLAUDE.md ---
 
 append_claude_rules() {
     info "Configuring CLAUDE.md rules..."
@@ -244,24 +270,27 @@ append_claude_rules() {
         # Inline fallback
         rules_content=$(cat <<'RULES'
 <!-- CLAUDE-COMPACT-GUARD:START -->
-## Context Compaction Awareness
+## Context Compaction Guard (MANDATORY)
 
-You have claude-compact-guard installed. Follow these rules:
+You have **claude-compact-guard** installed. Context compaction can happen at ANY time and erases your memory. You MUST maintain `~/.claude/compact-guard/current-task.md` to survive it.
 
-1. **At task start:** Write the current objective to `~/.claude/compact-guard/current-task.md`:
-   ```
-   Objective: [what the user wants]
-   Key files: [files involved]
-   Decisions made: [important choices]
-   Last action: [what was just done]
-   Next step: [what comes next]
-   ```
+**Rules:**
+1. **At task start:** Write objective, key files, and approach to `~/.claude/compact-guard/current-task.md`
+2. **After major decisions:** Update the file with choices made and rationale
+3. **After completing steps:** Update last action and next step
+4. **After compaction (`[COMPACTION RECOVERY]`):** Read recovered context, confirm with user, update file
 
-2. **When context feels unclear or after compaction:** Read `~/.claude/compact-guard/current-task.md` and ask the user to confirm the objective is still correct.
+**Format** (keep under 15 lines):
+```
+Objective: [specific goal]
+Key files: [files involved]
+Decisions made: [important choices]
+Rules to follow: [user constraints/standards]
+Last action: [what was just done]
+Next step: [what comes next]
+```
 
-3. **Before major actions:** Update `current-task.md` with latest decisions and progress.
-
-4. **If `~/.claude/compact-guard/.just-compacted` exists:** Read `current-task.md`, summarize what you remember to the user, ask for confirmation, then delete the `.just-compacted` marker file.
+This is NON-NEGOTIABLE. If you skip this, work will be lost on compaction.
 <!-- CLAUDE-COMPACT-GUARD:END -->
 RULES
 )
@@ -372,6 +401,7 @@ main() {
     install_hooks
     install_cli
     merge_settings
+    install_skill
     append_claude_rules
     init_task_file
     init_state_files

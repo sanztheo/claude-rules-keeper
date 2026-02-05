@@ -1,20 +1,23 @@
 <!-- CLAUDE-COMPACT-GUARD:START -->
-## Context Compaction Awareness
+## Context Compaction Guard (MANDATORY)
 
-You have claude-compact-guard installed. Follow these rules:
+You have **claude-compact-guard** installed. Context compaction can happen at ANY time and erases your memory. You MUST maintain `~/.claude/compact-guard/current-task.md` to survive it.
 
-1. **At task start:** Write the current objective to `~/.claude/compact-guard/current-task.md`:
-   ```
-   Objective: [what the user wants]
-   Key files: [files involved]
-   Decisions made: [important choices]
-   Last action: [what was just done]
-   Next step: [what comes next]
-   ```
+**Rules:**
+1. **At task start:** Write objective, key files, and approach to `~/.claude/compact-guard/current-task.md`
+2. **After major decisions:** Update the file with choices made and rationale
+3. **After completing steps:** Update last action and next step
+4. **After compaction (`[COMPACTION RECOVERY]`):** Read recovered context, confirm with user, update file
 
-2. **When context feels unclear or after compaction:** Read `~/.claude/compact-guard/current-task.md` and ask the user to confirm the objective is still correct.
+**Format** (keep under 15 lines):
+```
+Objective: [specific goal]
+Key files: [files involved]
+Decisions made: [important choices]
+Rules to follow: [user constraints/standards]
+Last action: [what was just done]
+Next step: [what comes next]
+```
 
-3. **Before major actions:** Update `current-task.md` with latest decisions and progress.
-
-4. **If `~/.claude/compact-guard/.just-compacted` exists:** Read `current-task.md`, summarize what you remember to the user, ask for confirmation, then delete the `.just-compacted` marker file.
+This is NON-NEGOTIABLE. If you skip this, work will be lost on compaction.
 <!-- CLAUDE-COMPACT-GUARD:END -->
