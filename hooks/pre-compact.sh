@@ -176,6 +176,95 @@ else:
     fi
 }
 
+# Generate a concise current-task.md from transcript
+# Kept small (~10 lines) so it doesn't bloat context after compaction
+auto_update_task_file() {
+    local transcript_path="$1"
+
+    if [[ ! -f "${transcript_path}" || "${transcript_path}" == "unknown" ]]; then
+        return
+    fi
+
+    if ! command -v python3 &>/dev/null; then
+        return
+    fi
+
+    local concise_task
+    concise_task=$(python3 -c "
+import json
+
+transcript_path = '${transcript_path}'
+user_messages = []
+files_touched = set()
+last_actions = []
+
+try:
+    with open(transcript_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+
+            msg_type = entry.get('type', '')
+
+            if msg_type == 'human':
+                content = entry.get('message', {}).get('content', '')
+                if isinstance(content, str) and content.strip():
+                    user_messages.append(content.strip()[:150])
+                elif isinstance(content, list):
+                    for part in content:
+                        if isinstance(part, dict) and part.get('type') == 'text':
+                            text = part.get('text', '').strip()
+                            if text:
+                                user_messages.append(text[:150])
+
+            if msg_type == 'assistant':
+                content = entry.get('message', {}).get('content', [])
+                if isinstance(content, list):
+                    for part in content:
+                        if not isinstance(part, dict):
+                            continue
+                        if part.get('type') == 'tool_use':
+                            inp = part.get('input', {})
+                            fp = inp.get('file_path', '')
+                            if fp:
+                                files_touched.add(fp)
+                            name = part.get('name', '')
+                            desc = inp.get('description', inp.get('command', ''))
+                            if name and desc:
+                                last_actions.append(f'{name}: {str(desc)[:80]}')
+except Exception:
+    pass
+
+# Build concise task file
+objective = user_messages[-1] if user_messages else '(unknown)'
+files_list = ', '.join(sorted(files_touched)[-5:]) if files_touched else '(none)'
+last_action = last_actions[-1] if last_actions else '(none)'
+
+# Truncate objective
+if len(objective) > 150:
+    objective = objective[:147] + '...'
+
+print(f'''# Current Task
+
+Objective: {objective}
+Key files: {files_list}
+Last action: {last_action}
+Next step: (continue from last action)
+
+---
+Updated: auto (pre-compaction)''')
+" 2>/dev/null) || return
+
+    if [[ -n "${concise_task}" ]]; then
+        atomic_write "${TASK_FILE}" "${concise_task}"
+    fi
+}
+
 update_state() {
     local compact_type="$1"
     local iso_ts
