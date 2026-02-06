@@ -147,15 +147,40 @@ with open('${tmp}', 'w') as f:
     success "Rules removed from CLAUDE.md"
 }
 
-# --- Step 4: Remove context-guard skill ---
+# --- Step 4: Remove rules-keeper skill ---
 
 remove_skill() {
-    local skill_dir="${CLAUDE_DIR}/skills/context-guard"
+    local skill_dir="${CLAUDE_DIR}/skills/rules-keeper"
     if [[ -d "${skill_dir}" ]]; then
         rm -rf "${skill_dir}"
-        success "Skill context-guard removed"
+        success "Skill rules-keeper removed"
     else
-        warn "No context-guard skill found"
+        warn "No rules-keeper skill found"
+    fi
+
+    # Also clean up old name if present
+    if [[ -d "${CLAUDE_DIR}/skills/context-guard" ]]; then
+        rm -rf "${CLAUDE_DIR}/skills/context-guard"
+    fi
+}
+
+# --- Step 4b: Remove slash commands ---
+
+remove_commands() {
+    local cmd_files=("rules.md" "rules-create.md" "rules-project.md" "rules-save.md" "rules-load.md")
+    local removed=0
+
+    for cmd_file in "${cmd_files[@]}"; do
+        if [[ -f "${CLAUDE_DIR}/commands/${cmd_file}" ]]; then
+            rm -f "${CLAUDE_DIR}/commands/${cmd_file}"
+            removed=$((removed + 1))
+        fi
+    done
+
+    if [[ "${removed}" -gt 0 ]]; then
+        success "${removed} slash commands removed"
+    else
+        warn "No slash commands found"
     fi
 }
 
@@ -219,6 +244,7 @@ main() {
     remove_settings_hooks
     remove_claude_rules
     remove_skill
+    remove_commands
     remove_cli
     remove_guard_dir
 

@@ -7,53 +7,46 @@ description: Use at the start of every conversation and before every task - main
 
 ## Overview
 
-You have **claude-rules-keeper** installed. Context compaction erases your memory at any time. You maintain TWO files:
+You have **claude-rules-keeper** installed. Context compaction erases your memory. You maintain persistent rules across 3 scopes:
 
-1. **`~/.claude/rules-keeper/rules.md`** - Persistent rules that ALWAYS apply (coding standards, user preferences, constraints)
-2. **`~/.claude/rules-keeper/current-task.md`** - Current task state (objective, progress, next step)
+| Scope | File | When loaded |
+|-------|------|-------------|
+| **Global** | `~/.claude/rules-keeper/rules.md` | Every conversation |
+| **Project** | `~/.claude/rules-keeper/projects/<project>/rules.md` | When in that project |
+| **Task** | `~/.claude/rules-keeper/current-task.md` | Current session only |
 
-## 1. Rules (persistent, never expire)
+## At Conversation Start
 
-**At conversation start:** Read `~/.claude/rules-keeper/rules.md` and follow every rule listed.
+1. **Read global rules:** `~/.claude/rules-keeper/rules.md`
+2. **Read project rules:** Detect project via `git rev-parse --show-toplevel` basename, read `~/.claude/rules-keeper/projects/<project>/rules.md` if it exists
+3. **Follow ALL rules** from both files
 
-**Auto-detect important rules:** When the user states a preference, constraint, or standard that should persist across sessions, add it to `rules.md` automatically. Examples:
-- "Toujours utiliser async/await" → add to rules.md
-- "Ne jamais utiliser any en TypeScript" → add to rules.md
-- "Les commits doivent etre en francais" → add to rules.md
-- "Je prefere les early returns" → add to rules.md
+## Auto-Detect Rules
 
-**How to detect:** If the user says something that sounds like a permanent instruction (not task-specific), append it to `~/.claude/rules-keeper/rules.md` as a `- ` list item and confirm briefly.
+When the user states a preference, constraint, or standard that should persist, save it automatically:
+- Permanent preference → append to **global** `rules.md`
+- Project-specific preference → append to **project** rules file
+- Confirm briefly: "Rule noted in [global/project] rules."
 
-**User commands:** `/rules <text>` adds raw, `/rules-create <text>` reformulates first.
+Detection signals: "toujours", "jamais", "je prefere", "utilise X pas Y", "les commits doivent", coding standards, naming conventions.
 
-## 2. Task State (temporary, per-task)
+## User Commands
 
-Write to `~/.claude/rules-keeper/current-task.md` at:
-1. **Task start** - objective and key files
-2. **After major decisions** - choices made
-3. **After completing steps** - last action, next step
-4. **Before stopping** - final state
+| Command | What it does |
+|---------|-------------|
+| `/rules <text>` | Add raw rule to global |
+| `/rules-project <text>` | Add raw rule to current project |
+| `/rules-create <text>` | Claude reformulates, then adds |
+| `/rules-save <name>` | Save all rules as reusable preset |
+| `/rules-load <name>` | Load a preset into current session |
 
-Format (keep under 15 lines):
-```
-Objective: [specific goal]
-Key files: [files involved]
-Decisions made: [important choices]
-Last action: [what was just done]
-Next step: [what comes next]
-```
+## Task State
 
-## Red Flags
-
-| Thought | Reality |
-|---------|---------|
-| "I'll write it later" | Compaction can happen NOW. Write immediately. |
-| "This rule is obvious" | After compaction, nothing is obvious. Save it. |
-| "I'll remember" | You won't. Compaction erases everything. |
+Write to `~/.claude/rules-keeper/current-task.md` at task start, after decisions, and before stopping. Keep under 15 lines.
 
 ## After Compaction
 
 If you see `[COMPACTION RECOVERY]`:
-1. Read `rules.md` - these are your standing orders
+1. Read global + project rules - these are standing orders
 2. Read recovered task context
 3. Confirm with user before continuing

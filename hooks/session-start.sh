@@ -8,6 +8,7 @@ readonly GUARD_DIR="${HOME}/.claude/rules-keeper"
 readonly BACKUPS_DIR="${GUARD_DIR}/backups"
 readonly TASK_FILE="${GUARD_DIR}/current-task.md"
 readonly RULES_FILE="${GUARD_DIR}/rules.md"
+readonly PROJECTS_DIR="${GUARD_DIR}/projects"
 
 # --- Helpers ---
 
@@ -29,6 +30,13 @@ get_latest_backup() {
         return
     fi
     find "${BACKUPS_DIR}" -maxdepth 1 -name "*.md" -type f 2>/dev/null | sort -r | head -n 1
+}
+
+detect_project_name() {
+    # Try git first, fallback to cwd basename
+    local project_name=""
+    project_name=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
+    echo "${project_name}"
 }
 
 # --- Main ---
@@ -53,7 +61,7 @@ main() {
     # Build context to inject
     local context=""
 
-    # Read persistent rules first (most important — these are standing orders)
+    # Read global persistent rules (most important — standing orders)
     local rules_content=""
     if [[ -f "${RULES_FILE}" ]]; then
         rules_content=$(cat "${RULES_FILE}")
@@ -63,6 +71,28 @@ main() {
 
 ## Your Persistent Rules (MUST follow)
 ${rules_content}"
+        fi
+    fi
+
+    # Read project-specific rules
+    local project_name
+    project_name=$(detect_project_name)
+    local project_rules_file="${PROJECTS_DIR}/${project_name}/rules.md"
+    if [[ -n "${project_name}" && -f "${project_rules_file}" ]]; then
+        local project_rules
+        project_rules=$(cat "${project_rules_file}")
+        if echo "${project_rules}" | grep -q "^- " 2>/dev/null; then
+            if [[ -n "${context}" ]]; then
+                context="${context}
+
+## Project Rules: ${project_name} (MUST follow)
+${project_rules}"
+            else
+                context="[COMPACTION RECOVERY] The conversation was just compacted.
+
+## Project Rules: ${project_name} (MUST follow)
+${project_rules}"
+            fi
         fi
     fi
 

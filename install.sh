@@ -47,7 +47,9 @@ atomic_write() {
 
 create_directories() {
     info "Creating directory structure..."
-    mkdir -p "${GUARD_DIR}" "${BACKUPS_DIR}" "${HOOKS_DIR}" "${BIN_DIR}" "${SKILLS_DIR}/context-guard"
+    mkdir -p "${GUARD_DIR}" "${BACKUPS_DIR}" "${HOOKS_DIR}" "${BIN_DIR}" \
+        "${SKILLS_DIR}/rules-keeper" "${GUARD_DIR}/projects" "${GUARD_DIR}/presets" \
+        "${CLAUDE_DIR}/commands"
     success "Directories created"
 }
 
@@ -217,29 +219,71 @@ merge_settings_sed() {
     echo '  }'
 }
 
-# --- Step 5: Install context-guard skill ---
+# --- Step 5: Install rules-keeper skill ---
 
 install_skill() {
-    info "Installing context-guard skill..."
+    info "Installing rules-keeper skill..."
 
-    local skill_dest="${SKILLS_DIR}/context-guard/SKILL.md"
+    local skill_dest="${SKILLS_DIR}/rules-keeper/SKILL.md"
 
     local script_dir=""
     if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
         script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
     fi
 
-    if [[ -n "${script_dir}" && -f "${script_dir}/skills/context-guard/SKILL.md" ]]; then
-        cp "${script_dir}/skills/context-guard/SKILL.md" "${skill_dest}"
+    if [[ -n "${script_dir}" && -f "${script_dir}/skills/rules-keeper/SKILL.md" ]]; then
+        cp "${script_dir}/skills/rules-keeper/SKILL.md" "${skill_dest}"
     else
-        curl -fsSL "${REPO_URL}/skills/context-guard/SKILL.md" -o "${skill_dest}" 2>/dev/null || true
+        curl -fsSL "${REPO_URL}/skills/rules-keeper/SKILL.md" -o "${skill_dest}" 2>/dev/null || true
     fi
 
     if [[ -f "${skill_dest}" ]]; then
-        success "Skill context-guard installed"
+        success "Skill rules-keeper installed"
     else
-        warn "Could not install skill (manual install: copy skills/context-guard/SKILL.md to ~/.claude/skills/context-guard/)"
+        warn "Could not install skill (manual install: copy skills/rules-keeper/SKILL.md to ~/.claude/skills/rules-keeper/)"
     fi
+}
+
+# --- Step 5b: Install slash commands ---
+
+install_commands() {
+    info "Installing slash commands..."
+
+    local commands_dest="${CLAUDE_DIR}/commands"
+
+    local script_dir=""
+    if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+        script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+    fi
+
+    local cmd_files=("rules.md" "rules-create.md" "rules-project.md" "rules-save.md" "rules-load.md")
+    local installed=0
+
+    for cmd_file in "${cmd_files[@]}"; do
+        if [[ -n "${script_dir}" && -f "${script_dir}/commands/${cmd_file}" ]]; then
+            cp "${script_dir}/commands/${cmd_file}" "${commands_dest}/${cmd_file}"
+            installed=$((installed + 1))
+        else
+            curl -fsSL "${REPO_URL}/commands/${cmd_file}" -o "${commands_dest}/${cmd_file}" 2>/dev/null && installed=$((installed + 1))
+        fi
+    done
+
+    success "${installed} slash commands installed (/rules, /rules-create, /rules-project, /rules-save, /rules-load)"
+}
+
+# --- Step 5c: Initialize rules.md ---
+
+init_rules_file() {
+    if [[ -f "${GUARD_DIR}/rules.md" ]]; then
+        success "rules.md already exists (keeping)"
+        return
+    fi
+
+    cat > "${GUARD_DIR}/rules.md" <<'EOF'
+# Persistent Rules
+
+EOF
+    success "rules.md initialized"
 }
 
 # --- Step 6: Append rules to CLAUDE.md ---
@@ -402,6 +446,8 @@ main() {
     install_cli
     merge_settings
     install_skill
+    install_commands
+    init_rules_file
     append_claude_rules
     init_task_file
     init_state_files
