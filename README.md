@@ -282,7 +282,10 @@ crk config set max_backups 20
 │   ├── rules-remove.md       # /rules-remove (delete by number)
 │   ├── rules-clear.md        # /rules-clear (clear session)
 │   ├── rules-save.md         # /rules-save (preset)
-│   └── rules-load.md         # /rules-load (preset)
+│   ├── rules-load.md         # /rules-load (preset)
+│   ├── rules-doctor.md       # /rules-doctor (diagnostics)
+│   ├── rules-upgrade.md      # /rules-upgrade (update)
+│   └── rules-status.md       # /rules-status (dashboard)
 ├── hooks/
 │   ├── pre-compact.sh        # Backup before compaction
 │   └── session-start.sh      # Rules + context injection after compaction
