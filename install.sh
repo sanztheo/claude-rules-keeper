@@ -4,7 +4,7 @@ set -euo pipefail
 # claude-rules-keeper installer
 # Usage: curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-rules-keeper/main/install.sh | bash
 
-readonly VERSION="1.1.0"
+readonly VERSION="1.2.0"
 readonly CLAUDE_DIR="${HOME}/.claude"
 readonly GUARD_DIR="${CLAUDE_DIR}/rules-keeper"
 readonly HOOKS_DIR="${CLAUDE_DIR}/hooks"

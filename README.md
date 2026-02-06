@@ -1,13 +1,13 @@
 <p align="center">
   <h1 align="center">claude-rules-keeper</h1>
   <p align="center">
-    <strong>Never lose context again.</strong><br>
-    Multi-layered context protection for Claude Code compaction events.
+    <strong>Claude Code never forgets your rules.</strong><br>
+    Persistent rules & context that survive compaction.
   </p>
   <p align="center">
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
     <a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/Made%20with-Bash-1f425f.svg" alt="Bash"></a>
-    <a href="https://github.com/sanztheo/claude-rules-keeper/releases"><img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version"></a>
+    <a href="https://github.com/sanztheo/claude-rules-keeper/releases"><img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version"></a>
     <a href="https://github.com/sanztheo/claude-rules-keeper"><img src="https://img.shields.io/github/stars/sanztheo/claude-rules-keeper?style=social" alt="GitHub Stars"></a>
   </p>
 </p>
@@ -20,12 +20,12 @@ When Claude Code's context window fills up (~75-92%), it **automatically compres
 
 | What happens | Impact |
 |---|---|
-| Task details get paraphrased | Accuracy drops from ~95% to ~60-70% |
 | Custom rules get summarized | Claude stops following your coding standards |
+| Task details get paraphrased | Accuracy drops from ~95% to ~60-70% |
 | Working context is lost | Claude forgets what you were building |
 | No built-in recovery | You have to re-explain everything |
 
-**claude-rules-keeper** uses a **2-layer protection system** to ensure Claude never loses your work context.
+**claude-rules-keeper** keeps your **persistent rules** and **task context** alive across compactions using a 2-layer protection system + slash commands to manage rules.
 
 ## Quick Start
 
@@ -41,35 +41,42 @@ That's it. Zero dependencies. Pure bash. Works on **macOS** and **Linux**.
 > cd claude-rules-keeper && ./install.sh
 > ```
 
-## How It Works: 2-Layer Protection
+## How It Works
 
-Unlike tools that rely on a single mechanism, claude-rules-keeper stacks **two independent layers** to maximize compliance:
+### 2-Layer Protection
 
 ```
   LAYER 1: CLAUDE.md Rules (passive)          ~70% compliance alone
   ──────────────────────────────────
   Injected into ~/.claude/CLAUDE.md
   between guard markers. Claude reads
-  these rules as part of its system
-  instructions.
+  these as system instructions.
 
           +
 
-  LAYER 2: context-guard Skill (active)       ~90% compliance alone
+  LAYER 2: rules-keeper Skill (active)       ~90% compliance alone
   ──────────────────────────────────────
   Installed to ~/.claude/skills/
   Invoked at the START of every
-  conversation. Claude actively
-  processes and follows the skill.
+  conversation. Claude actively follows
+  the skill + auto-detects new rules.
 
           =
 
   COMBINED: ~97%+ compliance
-  ──────────────────────────────────
-  Claude writes to current-task.md
-  at task start, after decisions,
-  and before stopping.
 ```
+
+### 3-Scope Rules System
+
+Your rules are organized in 3 scopes:
+
+| Scope | File | When loaded |
+|---|---|---|
+| **Global** | `~/.claude/rules-keeper/rules.md` | Every conversation |
+| **Project** | `~/.claude/rules-keeper/projects/<project>/rules.md` | When working in that project |
+| **Task** | `~/.claude/rules-keeper/current-task.md` | Current session only |
+
+**Global rules** apply everywhere (coding standards, commit format, language preference). **Project rules** apply only when you're working in a specific git repo. **Task state** tracks what you're currently doing and survives compaction.
 
 ### The Flow
 
@@ -77,16 +84,15 @@ Unlike tools that rely on a single mechanism, claude-rules-keeper stacks **two i
   You're coding with Claude Code
               │
               ▼
-  Claude starts a task
-              │
-              ▼
   ┌─────────────────────────────┐
-  │   context-guard skill       │  ← Layer 2 (active)
-  │   triggers automatically    │
+  │   rules-keeper skill        │  ← Layer 2 (active)
+  │   loads at conversation     │
+  │   start                     │
   │                             │
-  │   Claude writes objective,  │
-  │   key files, decisions to   │
-  │   current-task.md           │
+  │  ✓ Reads global rules       │
+  │  ✓ Reads project rules      │
+  │  ✓ Auto-detects new rules   │
+  │  ✓ Writes task state        │
   └──────────────┬──────────────┘
                  │
   Context window fills up (~75-92%)
@@ -96,38 +102,61 @@ Unlike tools that rely on a single mechanism, claude-rules-keeper stacks **two i
   │     PreCompact Hook         │  ← Backup layer
   │                             │
   │  ✓ Extracts context from    │
-  │    transcript (python3)     │
+  │    transcript               │
   │  ✓ Creates timestamped      │
   │    backup                   │
-  │  ✓ Updates compaction stats  │
   └──────────────┬──────────────┘
                  │
         Compaction happens
-        (context compressed)
                  │
                  ▼
   ┌─────────────────────────────┐
   │    SessionStart Hook        │  ← Recovery layer
   │                             │
-  │  ✓ Detects compaction       │
-  │  ✓ Injects saved context    │
-  │    via additionalContext    │
-  │  ✓ Claude resumes with      │
-  │    full awareness           │
+  │  ✓ Injects global rules     │
+  │  ✓ Injects project rules    │
+  │  ✓ Injects task context     │
+  │    via additionalContext     │
   └─────────────────────────────┘
 ```
 
+### Slash Commands
+
+Manage your rules directly from Claude Code:
+
+| Command | Description |
+|---|---|
+| `/rules <text>` | Add a rule exactly as written (global scope) |
+| `/rules-create <text>` | Claude reformulates, you validate, then it's saved |
+| `/rules-project <text>` | Add a rule for the current project only |
+| `/rules-save <name>` | Save current rules as a reusable preset |
+| `/rules-load <name>` | Load a preset into the current session |
+
+### Auto-Detection
+
+The skill also detects when you state a preference during conversation and saves it automatically:
+
+> "toujours utiliser async/await" → saved to global rules
+> "dans ce projet on utilise Zod pour la validation" → saved to project rules
+
 ### What gets saved?
 
-Claude maintains a **structured snapshot** of your current work in `~/.claude/rules-keeper/current-task.md`:
+**Rules** persist forever (until you remove them):
+```markdown
+# Persistent Rules
 
+- Always use async/await, never .then()
+- Commits: no AI references, no Co-Authored-By
+- TypeScript: never use any, prefer unknown + narrowing
+```
+
+**Task state** tracks your current work:
 ```markdown
 # Current Task
 
 Objective: Implement OAuth2 login flow
 Key files: src/auth/oauth.ts, src/middleware/auth.ts
 Decisions made: Using PKCE flow, storing tokens in httpOnly cookies
-Rules to follow: No any types, async/await only, early returns
 Last action: Created token refresh middleware
 Next step: Add logout endpoint and token revocation
 ```
@@ -138,10 +167,11 @@ The installer sets up everything automatically:
 
 | Component | Location | Purpose |
 |---|---|---|
-| **context-guard skill** | `~/.claude/skills/context-guard/` | Active layer - forces Claude to maintain current-task.md |
+| **rules-keeper skill** | `~/.claude/skills/rules-keeper/` | Active layer - reads rules, auto-detects new ones |
 | **CLAUDE.md rules** | `~/.claude/CLAUDE.md` (appended) | Passive layer - rules between guard markers |
+| **Slash commands** | `~/.claude/commands/rules*.md` | 5 commands for managing rules |
 | **PreCompact hook** | `~/.claude/hooks/pre-compact.sh` | Creates backups before compaction |
-| **SessionStart hook** | `~/.claude/hooks/session-start.sh` | Injects context after compaction |
+| **SessionStart hook** | `~/.claude/hooks/session-start.sh` | Injects rules + context after compaction |
 | **crk CLI** | `~/.local/bin/crk` | Status, backups, restore, config |
 | **Hook config** | `~/.claude/settings.json` (merged) | Registers hooks with Claude Code |
 
@@ -155,7 +185,7 @@ The `crk` command gives you full control over your backups and task tracking.
 $ crk status
 ```
 ```
-claude-rules-keeper v1.1.0
+claude-rules-keeper v1.2.0
 ===========================
 Last compaction:  2026-02-05 14:30 (auto) - 2h ago
 Total compactions: 7
@@ -210,20 +240,30 @@ crk config set max_backups 20
 ```
 ~/.claude/
 ├── rules-keeper/
+│   ├── rules.md              # Global persistent rules
+│   ├── projects/
+│   │   └── my-app/
+│   │       └── rules.md      # Project-specific rules
+│   ├── presets/
+│   │   └── typescript.md     # Saved rule presets
 │   ├── backups/              # Rotating context snapshots
-│   │   ├── 2026-02-05_14-30-22.md
-│   │   └── 2026-02-05_16-45-10.md
-│   ├── current-task.md       # Current task (maintained by Claude)
-│   ├── state.json            # Compaction stats & timestamps
+│   ├── current-task.md       # Current task state
+│   ├── state.json            # Compaction stats
 │   └── config.json           # User preferences
+├── commands/
+│   ├── rules.md              # /rules command
+│   ├── rules-create.md       # /rules-create command
+│   ├── rules-project.md      # /rules-project command
+│   ├── rules-save.md         # /rules-save command
+│   └── rules-load.md         # /rules-load command
 ├── hooks/
 │   ├── pre-compact.sh        # Backup before compaction
-│   └── session-start.sh      # Context injection after compaction
+│   └── session-start.sh      # Rules + context injection after compaction
 ├── skills/
-│   └── context-guard/
+│   └── rules-keeper/
 │       └── SKILL.md          # Active skill (Layer 2)
-├── settings.json             # Claude Code hooks config (merged safely)
-└── CLAUDE.md                 # Rules between guard markers (Layer 1)
+├── settings.json             # Claude Code hooks config (merged)
+└── CLAUDE.md                 # Guard markers (Layer 1)
 ```
 
 ### Design Principles
@@ -246,7 +286,7 @@ curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-rules-keeper/main/u
 
 Or locally: `./uninstall.sh`
 
-The uninstaller removes everything cleanly: hook entries from `settings.json`, guard markers from `CLAUDE.md`, the context-guard skill, and optionally preserves your backups.
+The uninstaller removes everything cleanly: hook entries from `settings.json`, guard markers from `CLAUDE.md`, the rules-keeper skill, slash commands, and optionally preserves your backups.
 
 ## FAQ
 
@@ -271,19 +311,25 @@ The tool falls back to `python3` for JSON operations, then to `grep/sed` as a la
 <details>
 <summary><strong>Why two layers instead of one?</strong></summary>
 
-Testing showed that a CLAUDE.md rule alone achieves ~70% compliance - Claude sometimes skips writing to the file. The skill layer actively triggers at conversation start, bringing compliance to ~90%+. Combined, they provide near-100% coverage.
+Testing showed that a CLAUDE.md rule alone achieves ~70% compliance - Claude sometimes skips following it. The skill layer actively triggers at conversation start, bringing compliance to ~90%+. Combined, they provide near-100% coverage.
 </details>
 
 <details>
-<summary><strong>What's the difference between the skill and the CLAUDE.md rule?</strong></summary>
+<summary><strong>What's the difference between global and project rules?</strong></summary>
 
-The **CLAUDE.md rule** (Layer 1) is passive - it's text in Claude's system instructions that it may or may not follow. The **skill** (Layer 2) is active - it gets invoked as a specific instruction set that Claude processes and follows, with anti-rationalization patterns built in.
+**Global rules** (`rules.md`) apply in every conversation - coding standards, commit formats, language preferences. **Project rules** (`projects/<name>/rules.md`) apply only when you're in a specific git repo - project-specific conventions, tech stack choices. The project is auto-detected via `git rev-parse --show-toplevel`.
+</details>
+
+<details>
+<summary><strong>What are presets?</strong></summary>
+
+Presets let you save a snapshot of your current rules (global + project) and reload them later. Use `/rules-save typescript-strict` to save, `/rules-load typescript-strict` to reload in any conversation. Think of them as rule "profiles".
 </details>
 
 <details>
 <summary><strong>How does recovery work after compaction?</strong></summary>
 
-The `SessionStart` hook detects when a session starts after compaction (via the `"compact"` matcher). It reads `current-task.md` and injects it directly into Claude's context using `additionalContext` - this is guaranteed injection, not optional reading.
+The `SessionStart` hook detects compaction via the `"compact"` matcher. It injects global rules, project rules, and task context directly into Claude's context using `additionalContext` - guaranteed injection, not optional file reading.
 </details>
 
 ## Contributing
