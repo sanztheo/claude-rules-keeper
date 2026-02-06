@@ -129,6 +129,15 @@ merge_settings() {
             "timeout": 5000
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/session-start.sh",
+            "timeout": 3000
+          }
+        ]
       }
     ]
   }
