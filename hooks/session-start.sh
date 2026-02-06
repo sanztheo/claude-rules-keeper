@@ -34,10 +34,14 @@ get_latest_backup() {
 }
 
 detect_project_name() {
-    # Try git first, fallback to cwd basename
-    local project_name=""
-    project_name=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
-    echo "${project_name}"
+    # Try git first, but guard against $HOME (monorepo / no local .git)
+    local git_root=""
+    git_root=$(git rev-parse --show-toplevel 2>/dev/null) || true
+    if [[ -n "${git_root}" && "${git_root}" != "${HOME}" ]]; then
+        basename "${git_root}"
+    else
+        basename "$(pwd)"
+    fi
 }
 
 # --- Context Builder ---

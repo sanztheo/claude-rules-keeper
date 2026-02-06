@@ -20,7 +20,7 @@ You have **claude-rules-keeper** installed. Context compaction erases your memor
 
 1. **Read session rules:** `~/.claude/rules-keeper/session-rules.md` (if exists)
 2. **Read global rules:** `~/.claude/rules-keeper/rules.md`
-3. **Read project rules:** Detect project via `git rev-parse --show-toplevel` basename, read `~/.claude/rules-keeper/projects/<project>/rules.md` if it exists
+3. **Read project rules:** Detect project via `git rev-parse --show-toplevel` basename (if result equals `$HOME`, fallback to `basename $(pwd)`), read `~/.claude/rules-keeper/projects/<project>/rules.md` if it exists
 4. **Follow ALL rules** from all files
 
 ## Auto-Detect Rules

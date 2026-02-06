@@ -394,7 +394,13 @@ count_rules() {
 
 cmd_rules() {
     local project_name
-    project_name=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
+    local git_root=""
+    git_root=$(git rev-parse --show-toplevel 2>/dev/null) || true
+    if [[ -n "${git_root}" && "${git_root}" != "${HOME}" ]]; then
+        project_name=$(basename "${git_root}")
+    else
+        project_name=$(basename "$(pwd)")
+    fi
     local project_rules_file="${PROJECTS_DIR}/${project_name}/rules.md"
 
     local session_count

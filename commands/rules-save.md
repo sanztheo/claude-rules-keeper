@@ -11,7 +11,7 @@ You are saving the current rules as a reusable preset that can be loaded in any 
    - Sanitize: lowercase, hyphens instead of spaces, no special chars
 2. **Read current rules:**
    - Global: `~/.claude/rules-keeper/rules.md`
-   - Project (if exists): detect project name via `basename $(git rev-parse --show-toplevel 2>/dev/null || pwd)`, read `~/.claude/rules-keeper/projects/<project>/rules.md`
+   - Project (if exists): detect project name via `git rev-parse --show-toplevel` basename (guard against `$HOME` — fallback to `basename $(pwd)`), read `~/.claude/rules-keeper/projects/<project>/rules.md`
 3. **Combine** into a single preset file at `~/.claude/rules-keeper/presets/<preset-name>.md`
 4. **Confirm** with preset name and rule count
 

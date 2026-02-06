@@ -6,7 +6,7 @@ You have **claude-rules-keeper** installed. Context compaction erases your memor
 1. **Read rules at conversation start:**
    - Session: `~/.claude/rules-keeper/session-rules.md` (this conversation only)
    - Global: `~/.claude/rules-keeper/rules.md` (permanent)
-   - Project: `~/.claude/rules-keeper/projects/<project>/rules.md` (detect via `git rev-parse --show-toplevel` basename)
+   - Project: `~/.claude/rules-keeper/projects/<project>/rules.md` (detect via `git rev-parse --show-toplevel` basename; if result equals `$HOME`, fallback to `basename $(pwd)`)
 2. **Auto-detect rules:** Default to **session scope**. Only save to global if user says "toujours"/"permanently".
 3. **Maintain `~/.claude/rules-keeper/current-task.md`** with current task state
 4. **After compaction (`[COMPACTION RECOVERY]`):** Read all rules + recovered context, confirm with user

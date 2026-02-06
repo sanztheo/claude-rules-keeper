@@ -8,7 +8,8 @@ You are adding a **permanent project rule**. This rule only applies when working
 ## Workflow
 
 1. **Detect the project name:**
-   - Run `basename $(git rev-parse --show-toplevel 2>/dev/null || pwd)` to get the project directory name
+   - Run `git rev-parse --show-toplevel` — if it succeeds and the result is NOT `$HOME`, use its basename
+   - Otherwise fallback to `basename $(pwd)`
 2. **Determine the rules file:** `~/.claude/rules-keeper/projects/<project-name>/rules.md`
 3. **Create directory** if it doesn't exist
 4. **Read** the existing rules file to check for duplicates
@@ -30,6 +31,6 @@ You are adding a **permanent project rule**. This rule only applies when working
 ## Rules
 
 - NEVER reformulate - write EXACTLY as given
-- Use `git rev-parse --show-toplevel` basename as project name, fallback to `basename $(pwd)`
+- Use `git rev-parse --show-toplevel` basename as project name, but guard against `$HOME` — fallback to `basename $(pwd)` if git root equals `$HOME` or is empty
 - Create the directory and file if they don't exist
 - Warn if a similar rule already exists

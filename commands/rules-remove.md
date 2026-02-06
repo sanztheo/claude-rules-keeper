@@ -27,7 +27,7 @@ You are removing a rule from the user's rules files.
 3. **Read the appropriate file:**
    - Session: `~/.claude/rules-keeper/session-rules.md`
    - Global: `~/.claude/rules-keeper/rules.md`
-   - Project: detect via `git rev-parse --show-toplevel` basename, read `~/.claude/rules-keeper/projects/<project>/rules.md`
+   - Project: detect via `git rev-parse --show-toplevel` basename (guard against `$HOME` — fallback to `basename $(pwd)`), read `~/.claude/rules-keeper/projects/<project>/rules.md`
 
 4. **Remove the line** starting with `- ` at the specified position
 5. **Write** the file back without that line
