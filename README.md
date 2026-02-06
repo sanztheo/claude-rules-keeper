@@ -371,6 +371,13 @@ The `SessionStart` hook detects compaction via the `"compact"` matcher. It injec
 5. Test the install/uninstall flow
 6. Open a Pull Request
 
+## Roadmap
+
+- [ ] **OpenAI Codex** support — adapt hooks for Codex CLI agent
+- [ ] **Gemini CLI** support — persistent rules across Gemini sessions
+- [ ] Checksum verification on `crk upgrade`
+- [ ] `crk doctor --fix` to auto-repair common issues
+
 ## License
 
 [MIT](LICENSE) - Use it however you want.
