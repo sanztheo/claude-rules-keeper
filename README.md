@@ -8,6 +8,7 @@
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
     <a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/Made%20with-Bash-1f425f.svg" alt="Bash"></a>
     <a href="https://github.com/sanztheo/claude-rules-keeper/releases"><img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version"></a>
+    <a href="https://github.com/sanztheo/claude-rules-keeper/actions"><img src="https://github.com/sanztheo/claude-rules-keeper/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
     <a href="https://github.com/sanztheo/claude-rules-keeper"><img src="https://img.shields.io/github/stars/sanztheo/claude-rules-keeper?style=social" alt="GitHub Stars"></a>
   </p>
 </p>
@@ -134,6 +135,8 @@ Manage your rules directly from Claude Code:
 | `/rules-create <text>` | Claude reformulates, you validate, then saved to session |
 | `/rules-project <text>` | Add a permanent rule for the current project |
 | `/rules-show` | Display all active rules (session + global + project) |
+| `/rules-remove` | Remove a specific rule by number |
+| `/rules-clear` | Clear all session rules |
 | `/rules-save <name>` | Save current rules as a reusable preset |
 | `/rules-load <name>` | Load a preset into the current session |
 
@@ -181,7 +184,7 @@ The installer sets up everything automatically:
 |---|---|---|
 | **rules-keeper skill** | `~/.claude/skills/rules-keeper/` | Active layer - reads rules, auto-detects new ones |
 | **CLAUDE.md rules** | `~/.claude/CLAUDE.md` (appended) | Passive layer - rules between guard markers |
-| **Slash commands** | `~/.claude/commands/rules*.md` | 7 commands for managing rules |
+| **Slash commands** | `~/.claude/commands/rules*.md` | 9 commands for managing rules |
 | **PreCompact hook** | `~/.claude/hooks/pre-compact.sh` | Creates backups before compaction |
 | **SessionStart hook** | `~/.claude/hooks/session-start.sh` | Injects rules + context after compaction |
 | **crk CLI** | `~/.local/bin/crk` | Status, backups, restore, config |
@@ -219,6 +222,8 @@ Hooks:            pre-compact [OK]  session-start [OK]
 | `crk restore` | Restore latest backup to current task |
 | `crk config` | Show configuration |
 | `crk config set <key> <value>` | Update a config value |
+| `crk rules` | Show all active rules (session + global + project) |
+| `crk presets` | List saved rule presets |
 | `crk help` | Show help |
 | `crk version` | Print version |
 
@@ -269,6 +274,8 @@ crk config set max_backups 20
 │   ├── rules-create.md       # /rules-create (reformulate)
 │   ├── rules-project.md      # /rules-project (per-project)
 │   ├── rules-show.md         # /rules-show (display all)
+│   ├── rules-remove.md       # /rules-remove (delete by number)
+│   ├── rules-clear.md        # /rules-clear (clear session)
 │   ├── rules-save.md         # /rules-save (preset)
 │   └── rules-load.md         # /rules-load (preset)
 ├── hooks/
