@@ -1,5 +1,5 @@
 ---
-description: Add a persistent global rule (applies to ALL conversations, forever)
+description: Add a global rule (permanent, all conversations)
 argument-hint: <rule to remember permanently>
 ---
 

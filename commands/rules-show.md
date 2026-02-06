@@ -1,6 +1,6 @@
 ---
-description: Show all active rules for the current session
+description: Show all active rules
 allowed-tools: Bash
 ---
 
-Run `crk rules` to display all active rules (session + global + project). Just run the command and show the output, nothing else.
+Run `crk rules` and show the output. Nothing else.

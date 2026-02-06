@@ -1,5 +1,5 @@
 ---
-description: Add a session rule with Claude's help (reformulated for clarity)
+description: Add a rule with reformulation (session scope)
 argument-hint: <describe the rule you want>
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Load a saved preset of rules into the current session
+description: Load a rules preset
 argument-hint: <preset-name>
 ---
 

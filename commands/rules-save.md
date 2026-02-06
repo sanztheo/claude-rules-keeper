@@ -1,5 +1,5 @@
 ---
-description: Save current rules as a reusable preset
+description: Save rules as a preset
 argument-hint: <preset-name>
 ---
 

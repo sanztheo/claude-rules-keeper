@@ -1,9 +1,9 @@
 ---
-description: Add a persistent rule specific to the current project
+description: Add a project rule (permanent, current project)
 argument-hint: <rule for this project>
 ---
 
-You are adding a project-specific rule. This rule will only apply when working in the current project.
+You are adding a **permanent project rule**. This rule only applies when working in the current project.
 
 ## Workflow
 

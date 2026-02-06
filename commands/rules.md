@@ -1,5 +1,5 @@
 ---
-description: Add a session rule (survives compaction, cleared on new conversation)
+description: Add a session rule (this conversation only)
 argument-hint: <rule for this session>
 ---
 
