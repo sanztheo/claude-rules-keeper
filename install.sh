@@ -269,6 +269,12 @@ install_commands() {
         script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
     fi
 
+    # Clean up old command names from previous versions
+    local old_cmds=("rules.md" "rules-create.md" "rules-global.md" "rules-project.md")
+    for old_cmd in "${old_cmds[@]}"; do
+        rm -f "${commands_dest}/${old_cmd}"
+    done
+
     local cmd_files=("rules-add.md" "rules-add-smart.md" "rules-add-global.md" "rules-add-project.md" "rules-remove.md" "rules-clear.md" "rules-save.md" "rules-load.md" "rules-show.md" "rules-doctor.md" "rules-upgrade.md" "rules-status.md")
     local installed=0
 
