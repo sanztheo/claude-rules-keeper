@@ -1,10 +1,10 @@
-<!-- CLAUDE-COMPACT-GUARD:START -->
+<!-- CLAUDE-RULES-KEEPER:START -->
 ## Context Compaction Guard (MANDATORY)
 
-You have **claude-compact-guard** installed. Context compaction can happen at ANY time and erases your memory. You MUST maintain `~/.claude/compact-guard/current-task.md` to survive it.
+You have **claude-rules-keeper** installed. Context compaction can happen at ANY time and erases your memory. You MUST maintain `~/.claude/rules-keeper/current-task.md` to survive it.
 
 **Rules:**
-1. **At task start:** Write objective, key files, and approach to `~/.claude/compact-guard/current-task.md`
+1. **At task start:** Write objective, key files, and approach to `~/.claude/rules-keeper/current-task.md`
 2. **After major decisions:** Update the file with choices made and rationale
 3. **After completing steps:** Update last action and next step
 4. **After compaction (`[COMPACTION RECOVERY]`):** Read recovered context, confirm with user, update file
@@ -20,4 +20,4 @@ Next step: [what comes next]
 ```
 
 This is NON-NEGOTIABLE. If you skip this, work will be lost on compaction.
-<!-- CLAUDE-COMPACT-GUARD:END -->
+<!-- CLAUDE-RULES-KEEPER:END -->

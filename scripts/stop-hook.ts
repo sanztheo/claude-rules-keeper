@@ -12,7 +12,7 @@ import { readFileSync, statSync, existsSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 
-const GUARD_DIR = join(homedir(), ".claude", "compact-guard");
+const GUARD_DIR = join(homedir(), ".claude", "rules-keeper");
 const TASK_FILE = join(GUARD_DIR, "current-task.md");
 
 // Estimated bytes-per-token ratio for JSONL transcripts
@@ -114,7 +114,7 @@ function main(): void {
       "Context is ~" +
         Math.round(usagePercent) +
         "% full. Compaction is approaching.",
-      "Before stopping, write a concise summary to ~/.claude/compact-guard/current-task.md:",
+      "Before stopping, write a concise summary to ~/.claude/rules-keeper/current-task.md:",
       "",
       "# Current Task",
       "",

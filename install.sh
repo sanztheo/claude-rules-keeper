@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# claude-compact-guard installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-compact-guard/main/install.sh | bash
+# claude-rules-keeper installer
+# Usage: curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-rules-keeper/main/install.sh | bash
 
 readonly VERSION="1.1.0"
 readonly CLAUDE_DIR="${HOME}/.claude"
-readonly GUARD_DIR="${CLAUDE_DIR}/compact-guard"
+readonly GUARD_DIR="${CLAUDE_DIR}/rules-keeper"
 readonly HOOKS_DIR="${CLAUDE_DIR}/hooks"
 readonly BACKUPS_DIR="${GUARD_DIR}/backups"
 readonly SETTINGS_FILE="${CLAUDE_DIR}/settings.json"
@@ -14,9 +14,9 @@ readonly CLAUDE_MD="${CLAUDE_DIR}/CLAUDE.md"
 readonly BIN_DIR="${HOME}/.local/bin"
 
 readonly SKILLS_DIR="${CLAUDE_DIR}/skills"
-readonly GUARD_MARKER_START="<!-- CLAUDE-COMPACT-GUARD:START -->"
+readonly GUARD_MARKER_START="<!-- CLAUDE-RULES-KEEPER:START -->"
 
-readonly REPO_URL="https://raw.githubusercontent.com/sanztheo/claude-compact-guard/main"
+readonly REPO_URL="https://raw.githubusercontent.com/sanztheo/claude-rules-keeper/main"
 
 # --- Colors ---
 
@@ -79,21 +79,21 @@ install_hooks() {
 # --- Step 3: Install CLI ---
 
 install_cli() {
-    info "Installing ccg CLI..."
+    info "Installing crk CLI..."
 
     local script_dir=""
     if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
         script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
     fi
 
-    if [[ -n "${script_dir}" && -f "${script_dir}/bin/ccg" ]]; then
-        cp "${script_dir}/bin/ccg" "${BIN_DIR}/ccg"
+    if [[ -n "${script_dir}" && -f "${script_dir}/bin/crk" ]]; then
+        cp "${script_dir}/bin/crk" "${BIN_DIR}/crk"
     else
-        curl -fsSL "${REPO_URL}/bin/ccg" -o "${BIN_DIR}/ccg"
+        curl -fsSL "${REPO_URL}/bin/crk" -o "${BIN_DIR}/crk"
     fi
 
-    chmod +x "${BIN_DIR}/ccg"
-    success "CLI installed at ${BIN_DIR}/ccg"
+    chmod +x "${BIN_DIR}/crk"
+    success "CLI installed at ${BIN_DIR}/crk"
 }
 
 # --- Step 4: Merge hooks into settings.json ---
@@ -269,13 +269,13 @@ append_claude_rules() {
     if [[ -z "${rules_content}" ]]; then
         # Inline fallback
         rules_content=$(cat <<'RULES'
-<!-- CLAUDE-COMPACT-GUARD:START -->
+<!-- CLAUDE-RULES-KEEPER:START -->
 ## Context Compaction Guard (MANDATORY)
 
-You have **claude-compact-guard** installed. Context compaction can happen at ANY time and erases your memory. You MUST maintain `~/.claude/compact-guard/current-task.md` to survive it.
+You have **claude-rules-keeper** installed. Context compaction can happen at ANY time and erases your memory. You MUST maintain `~/.claude/rules-keeper/current-task.md` to survive it.
 
 **Rules:**
-1. **At task start:** Write objective, key files, and approach to `~/.claude/compact-guard/current-task.md`
+1. **At task start:** Write objective, key files, and approach to `~/.claude/rules-keeper/current-task.md`
 2. **After major decisions:** Update the file with choices made and rationale
 3. **After completing steps:** Update last action and next step
 4. **After compaction (`[COMPACTION RECOVERY]`):** Read recovered context, confirm with user, update file
@@ -291,7 +291,7 @@ Next step: [what comes next]
 ```
 
 This is NON-NEGOTIABLE. If you skip this, work will be lost on compaction.
-<!-- CLAUDE-COMPACT-GUARD:END -->
+<!-- CLAUDE-RULES-KEEPER:END -->
 RULES
 )
     fi
@@ -393,7 +393,7 @@ check_path() {
 
 main() {
     echo ""
-    echo -e "${BOLD}claude-compact-guard v${VERSION}${RESET}"
+    echo -e "${BOLD}claude-rules-keeper v${VERSION}${RESET}"
     echo -e "${DIM}Protecting Claude Code from context loss${RESET}"
     echo ""
 
@@ -411,8 +411,8 @@ main() {
     echo -e "${GREEN}${BOLD}Installation complete!${RESET}"
     echo ""
     echo -e "  ${BOLD}Quick start:${RESET}"
-    echo -e "    ccg status     ${DIM}# Check installation${RESET}"
-    echo -e "    ccg help       ${DIM}# See all commands${RESET}"
+    echo -e "    crk status     ${DIM}# Check installation${RESET}"
+    echo -e "    crk help       ${DIM}# See all commands${RESET}"
     echo ""
     echo -e "  ${DIM}Hooks are now active. Claude Code will automatically${RESET}"
     echo -e "  ${DIM}save context before compaction and detect resume.${RESET}"

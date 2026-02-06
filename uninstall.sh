@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# claude-compact-guard uninstaller
+# claude-rules-keeper uninstaller
 # Cleanly removes all components
 
 readonly CLAUDE_DIR="${HOME}/.claude"
-readonly GUARD_DIR="${CLAUDE_DIR}/compact-guard"
+readonly GUARD_DIR="${CLAUDE_DIR}/rules-keeper"
 readonly HOOKS_DIR="${CLAUDE_DIR}/hooks"
 readonly SETTINGS_FILE="${CLAUDE_DIR}/settings.json"
 readonly CLAUDE_MD="${CLAUDE_DIR}/CLAUDE.md"
 readonly BIN_DIR="${HOME}/.local/bin"
 
-readonly GUARD_MARKER_START="<!-- CLAUDE-COMPACT-GUARD:START -->"
-readonly GUARD_MARKER_END="<!-- CLAUDE-COMPACT-GUARD:END -->"
+readonly GUARD_MARKER_START="<!-- CLAUDE-RULES-KEEPER:START -->"
+readonly GUARD_MARKER_END="<!-- CLAUDE-RULES-KEEPER:END -->"
 
 # --- Colors ---
 
@@ -105,7 +105,7 @@ with open('${tmp}', 'w') as f:
         success "Hook entries removed from settings.json (python3)"
     else
         warn "Cannot modify settings.json without jq or python3"
-        warn "Please manually remove compact-guard hook entries"
+        warn "Please manually remove rules-keeper hook entries"
     fi
 }
 
@@ -118,7 +118,7 @@ remove_claude_rules() {
     fi
 
     if ! grep -q "${GUARD_MARKER_START}" "${CLAUDE_MD}" 2>/dev/null; then
-        warn "No compact-guard rules found in CLAUDE.md"
+        warn "No rules-keeper rules found in CLAUDE.md"
         return
     fi
 
@@ -162,19 +162,19 @@ remove_skill() {
 # --- Step 5: Remove CLI symlink ---
 
 remove_cli() {
-    if [[ -f "${BIN_DIR}/ccg" ]]; then
-        rm -f "${BIN_DIR}/ccg"
-        success "CLI removed from ${BIN_DIR}/ccg"
+    if [[ -f "${BIN_DIR}/crk" ]]; then
+        rm -f "${BIN_DIR}/crk"
+        success "CLI removed from ${BIN_DIR}/crk"
     else
-        warn "No ccg CLI found at ${BIN_DIR}/ccg"
+        warn "No crk CLI found at ${BIN_DIR}/crk"
     fi
 }
 
-# --- Step 5: Remove compact-guard directory ---
+# --- Step 5: Remove rules-keeper directory ---
 
 remove_guard_dir() {
     if [[ ! -d "${GUARD_DIR}" ]]; then
-        warn "No compact-guard directory found"
+        warn "No rules-keeper directory found"
         return
     fi
 
@@ -197,7 +197,7 @@ remove_guard_dir() {
         fi
 
         if [[ "${answer}" != "y" && "${answer}" != "Y" ]]; then
-            local backup_dest="${HOME}/claude-compact-guard-backups"
+            local backup_dest="${HOME}/claude-rules-keeper-backups"
             mkdir -p "${backup_dest}"
             cp -r "${GUARD_DIR}/backups/"* "${backup_dest}/" 2>/dev/null || true
             echo -e "${GREEN}Backups saved to ${backup_dest}/${RESET}"
@@ -212,7 +212,7 @@ remove_guard_dir() {
 
 main() {
     echo ""
-    echo -e "${BOLD}claude-compact-guard uninstaller${RESET}"
+    echo -e "${BOLD}claude-rules-keeper uninstaller${RESET}"
     echo ""
 
     remove_hooks

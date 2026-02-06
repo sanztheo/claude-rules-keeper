@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ccg - Claude Compact Guard CLI
+# crk - Claude Rules Keeper CLI
 # Manage context backups and task tracking for Claude Code
 
 readonly VERSION="1.0.0"
-readonly GUARD_DIR="${HOME}/.claude/compact-guard"
+readonly GUARD_DIR="${HOME}/.claude/rules-keeper"
 readonly BACKUPS_DIR="${GUARD_DIR}/backups"
 readonly TASK_FILE="${GUARD_DIR}/current-task.md"
 readonly STATE_FILE="${GUARD_DIR}/state.json"
@@ -169,7 +169,7 @@ get_task_summary() {
 # --- Commands ---
 
 cmd_status() {
-    echo -e "${BOLD}claude-compact-guard v${VERSION}${RESET}"
+    echo -e "${BOLD}claude-rules-keeper v${VERSION}${RESET}"
     echo "==========================="
 
     local last_compaction
@@ -205,7 +205,7 @@ cmd_status() {
 
 cmd_task() {
     if [[ ! -f "${TASK_FILE}" ]]; then
-        echo -e "${DIM}No task file found. Run 'ccg task set' to create one.${RESET}"
+        echo -e "${DIM}No task file found. Run 'crk task set' to create one.${RESET}"
         return
     fi
     cat "${TASK_FILE}"
@@ -220,7 +220,7 @@ cmd_task_set() {
         echo -e "${GREEN}Task updated from stdin.${RESET}"
     elif [[ -n "${EDITOR:-}" ]]; then
         if [[ ! -f "${TASK_FILE}" ]]; then
-            cp "${GUARD_DIR}/../../compact-guard/templates/current-task.md" "${TASK_FILE}" 2>/dev/null || cat > "${TASK_FILE}" <<'TMPL'
+            cp "${GUARD_DIR}/../../rules-keeper/templates/current-task.md" "${TASK_FILE}" 2>/dev/null || cat > "${TASK_FILE}" <<'TMPL'
 # Current Task
 
 Objective: (not set)
@@ -237,8 +237,8 @@ TMPL
         echo -e "${GREEN}Task updated.${RESET}"
     else
         echo -e "${YELLOW}No \$EDITOR set and no stdin pipe detected.${RESET}"
-        echo "Usage: echo 'my task' | ccg task set"
-        echo "   or: EDITOR=nano ccg task set"
+        echo "Usage: echo 'my task' | crk task set"
+        echo "   or: EDITOR=nano crk task set"
         return 1
     fi
 }
@@ -349,7 +349,7 @@ cmd_config_set() {
     local value="${2:-}"
 
     if [[ -z "${key}" || -z "${value}" ]]; then
-        echo -e "${RED}Usage: ccg config set <key> <value>${RESET}"
+        echo -e "${RED}Usage: crk config set <key> <value>${RESET}"
         echo "Available keys: max_backups, language, auto_confirm_after_compact, backup_transcript"
         return 1
     fi
@@ -364,9 +364,9 @@ cmd_config_set() {
 }
 
 cmd_help() {
-    echo -e "${BOLD}claude-compact-guard v${VERSION}${RESET}"
+    echo -e "${BOLD}claude-rules-keeper v${VERSION}${RESET}"
     echo ""
-    echo "Usage: ccg <command> [args]"
+    echo "Usage: crk <command> [args]"
     echo ""
     echo -e "${BOLD}Commands:${RESET}"
     echo "  status          Current state: last compaction, task, backups, hooks"
@@ -381,11 +381,11 @@ cmd_help() {
     echo "  help            Show this help"
     echo "  version         Print version"
     echo ""
-    echo -e "${DIM}Files: ~/.claude/compact-guard/${RESET}"
+    echo -e "${DIM}Files: ~/.claude/rules-keeper/${RESET}"
 }
 
 cmd_version() {
-    echo "claude-compact-guard v${VERSION}"
+    echo "claude-rules-keeper v${VERSION}"
 }
 
 # --- Main Router ---

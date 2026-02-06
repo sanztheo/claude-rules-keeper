@@ -1,4 +1,4 @@
-# claude-compact-guard - Full Specification
+# claude-rules-keeper - Full Specification
 
 ## The Problem
 
@@ -9,7 +9,7 @@ When Claude Code's context window fills up (~75-92%), it automatically compresse
 - Claude forgetting what the user was working on
 - No built-in mechanism to recover
 
-**claude-compact-guard** solves this with hooks, persistent memory files, and a small CLI.
+**claude-rules-keeper** solves this with hooks, persistent memory files, and a small CLI.
 
 ---
 
@@ -18,24 +18,24 @@ When Claude Code's context window fills up (~75-92%), it automatically compresse
 Single command install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sanz/claude-compact-guard/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sanz/claude-rules-keeper/main/install.sh | bash
 ```
 
-Installs everything into `~/.claude/compact-guard/` and configures Claude Code hooks automatically.
+Installs everything into `~/.claude/rules-keeper/` and configures Claude Code hooks automatically.
 
 ---
 
 ## Project Structure (Source)
 
 ```
-claude-compact-guard/
+claude-rules-keeper/
 ├── install.sh                  # Main installer (curl | bash compatible)
 ├── uninstall.sh                # Clean uninstall
 ├── hooks/
 │   ├── pre-compact.sh          # Runs BEFORE compaction: saves context snapshot
 │   └── session-start.sh        # Runs on SessionStart: detects post-compaction resume
 ├── bin/
-│   └── ccg                     # CLI tool (pure bash)
+│   └── crk                     # CLI tool (pure bash)
 ├── templates/
 │   ├── claude-rules.md         # Rules to inject into user's CLAUDE.md
 │   └── current-task.md         # Template for current task tracking
@@ -49,7 +49,7 @@ claude-compact-guard/
 
 ```
 ~/.claude/
-├── compact-guard/
+├── rules-keeper/
 │   ├── backups/                # Rotating context snapshots (max 10)
 │   │   ├── 2026-02-05_14-30-22.md
 │   │   └── 2026-02-05_16-45-10.md
@@ -77,15 +77,15 @@ claude-compact-guard/
 
 **Flow:**
 1. Detect OS and shell (bash/zsh)
-2. Create `~/.claude/compact-guard/{backups}` directory structure
+2. Create `~/.claude/rules-keeper/{backups}` directory structure
 3. Copy hook scripts to `~/.claude/hooks/`, make executable
 4. Merge hook config into `~/.claude/settings.json`:
    - Read existing file (or create `{}`)
    - Use `jq` if available, fallback to `python3 -c`, last resort `sed`
    - Add `PreCompact` and `SessionStart` hook entries
    - Write back without destroying existing config
-5. Append rules to `~/.claude/CLAUDE.md` between `<!-- CLAUDE-COMPACT-GUARD:START -->` and `<!-- CLAUDE-COMPACT-GUARD:END -->` markers (skip if already present)
-6. Symlink `bin/ccg` to `~/.local/bin/ccg` (create dir if needed)
+5. Append rules to `~/.claude/CLAUDE.md` between `<!-- CLAUDE-RULES-KEEPER:START -->` and `<!-- CLAUDE-RULES-KEEPER:END -->` markers (skip if already present)
+6. Symlink `bin/crk` to `~/.local/bin/crk` (create dir if needed)
 7. Initialize `state.json` and `config.json` with defaults
 8. Print colored success message with usage instructions
 
@@ -93,11 +93,11 @@ claude-compact-guard/
 
 ### 2. `uninstall.sh`
 
-- Remove `~/.claude/compact-guard/` (ask confirmation for backups)
+- Remove `~/.claude/rules-keeper/` (ask confirmation for backups)
 - Remove hook scripts from `~/.claude/hooks/`
 - Remove only our hook entries from `settings.json`
 - Remove rules between guard markers from `CLAUDE.md`
-- Remove `ccg` symlink
+- Remove `crk` symlink
 
 ---
 
@@ -115,7 +115,7 @@ claude-compact-guard/
 ```
 
 **Actions:**
-1. Read `~/.claude/compact-guard/current-task.md`
+1. Read `~/.claude/rules-keeper/current-task.md`
 2. Create timestamped backup: `backups/YYYY-MM-DD_HH-MM-SS.md`
 3. Backup format:
    ```markdown
@@ -139,32 +139,32 @@ claude-compact-guard/
 **Actions:**
 1. Read `state.json`
 2. If `last_compaction` is within the last 60 seconds:
-   - Write marker file `~/.claude/compact-guard/.just-compacted`
+   - Write marker file `~/.claude/rules-keeper/.just-compacted`
 3. The CLAUDE.md rules tell Claude to check for this marker and re-read context
 
 ---
 
-### 5. `bin/ccg` - CLI
+### 5. `bin/crk` - CLI
 
 Pure bash script. All commands:
 
 | Command | Description |
 |---------|-------------|
-| `ccg status` | Current state: last compaction, task, backup count, hook health |
-| `ccg task` | Show current task |
-| `ccg task set` | Set current task (opens `$EDITOR` or reads stdin) |
-| `ccg task clear` | Clear current task to template |
-| `ccg backups` | List all backups with timestamps |
-| `ccg backups show` | Show most recent backup |
-| `ccg restore` | Copy latest backup to current-task.md |
-| `ccg config` | Show config |
-| `ccg config set <key> <value>` | Update config value |
-| `ccg help` | Show help |
-| `ccg version` | Print version |
+| `crk status` | Current state: last compaction, task, backup count, hook health |
+| `crk task` | Show current task |
+| `crk task set` | Set current task (opens `$EDITOR` or reads stdin) |
+| `crk task clear` | Clear current task to template |
+| `crk backups` | List all backups with timestamps |
+| `crk backups show` | Show most recent backup |
+| `crk restore` | Copy latest backup to current-task.md |
+| `crk config` | Show config |
+| `crk config set <key> <value>` | Update config value |
+| `crk help` | Show help |
+| `crk version` | Print version |
 
-**`ccg status` output:**
+**`crk status` output:**
 ```
-claude-compact-guard v1.0.0
+claude-rules-keeper v1.0.0
 ===========================
 Last compaction:  2026-02-05 14:30 (auto) - 2h ago
 Total compactions: 7
@@ -180,12 +180,12 @@ Hooks:            pre-compact [OK]  session-start [OK]
 Rules appended to user's `~/.claude/CLAUDE.md`:
 
 ```markdown
-<!-- CLAUDE-COMPACT-GUARD:START -->
+<!-- CLAUDE-RULES-KEEPER:START -->
 ## Context Compaction Awareness
 
-You have claude-compact-guard installed. Follow these rules:
+You have claude-rules-keeper installed. Follow these rules:
 
-1. **At task start:** Write the current objective to `~/.claude/compact-guard/current-task.md`:
+1. **At task start:** Write the current objective to `~/.claude/rules-keeper/current-task.md`:
    ```
    Objective: [what the user wants]
    Key files: [files involved]
@@ -194,12 +194,12 @@ You have claude-compact-guard installed. Follow these rules:
    Next step: [what comes next]
    ```
 
-2. **When context feels unclear or after compaction:** Read `~/.claude/compact-guard/current-task.md` and ask the user to confirm the objective is still correct.
+2. **When context feels unclear or after compaction:** Read `~/.claude/rules-keeper/current-task.md` and ask the user to confirm the objective is still correct.
 
 3. **Before major actions:** Update `current-task.md` with latest decisions and progress.
 
-4. **If `~/.claude/compact-guard/.just-compacted` exists:** Read `current-task.md`, summarize what you remember to the user, ask for confirmation, then delete the `.just-compacted` marker file.
-<!-- CLAUDE-COMPACT-GUARD:END -->
+4. **If `~/.claude/rules-keeper/.just-compacted` exists:** Read `current-task.md`, summarize what you remember to the user, ask for confirmation, then delete the `.just-compacted` marker file.
+<!-- CLAUDE-RULES-KEEPER:END -->
 ```
 
 ---
@@ -267,7 +267,7 @@ Updated: (never)
 4. Quick Demo (terminal screenshot placeholder)
 5. Install (one-liner)
 6. How It Works (flow diagram)
-7. CLI Usage (all `ccg` commands with examples)
+7. CLI Usage (all `crk` commands with examples)
 8. Configuration (options table)
 9. Uninstall (one command)
 10. Contributing
@@ -280,7 +280,7 @@ Updated: (never)
 1. `templates/` - Static files (claude-rules.md, current-task.md)
 2. `hooks/pre-compact.sh` - Core backup logic
 3. `hooks/session-start.sh` - Compaction detection
-4. `bin/ccg` - CLI with all commands
+4. `bin/crk` - CLI with all commands
 5. `install.sh` - Installer
 6. `uninstall.sh` - Uninstaller
 7. `README.md` - GitHub documentation

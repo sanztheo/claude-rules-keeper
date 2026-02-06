@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">claude-compact-guard</h1>
+  <h1 align="center">claude-rules-keeper</h1>
   <p align="center">
     <strong>Never lose context again.</strong><br>
     Multi-layered context protection for Claude Code compaction events.
@@ -7,8 +7,8 @@
   <p align="center">
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
     <a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/Made%20with-Bash-1f425f.svg" alt="Bash"></a>
-    <a href="https://github.com/sanztheo/claude-compact-guard/releases"><img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version"></a>
-    <a href="https://github.com/sanztheo/claude-compact-guard"><img src="https://img.shields.io/github/stars/sanztheo/claude-compact-guard?style=social" alt="GitHub Stars"></a>
+    <a href="https://github.com/sanztheo/claude-rules-keeper/releases"><img src="https://img.shields.io/badge/version-1.1.0-blue.svg" alt="Version"></a>
+    <a href="https://github.com/sanztheo/claude-rules-keeper"><img src="https://img.shields.io/github/stars/sanztheo/claude-rules-keeper?style=social" alt="GitHub Stars"></a>
   </p>
 </p>
 
@@ -25,25 +25,25 @@ When Claude Code's context window fills up (~75-92%), it **automatically compres
 | Working context is lost | Claude forgets what you were building |
 | No built-in recovery | You have to re-explain everything |
 
-**claude-compact-guard** uses a **2-layer protection system** to ensure Claude never loses your work context.
+**claude-rules-keeper** uses a **2-layer protection system** to ensure Claude never loses your work context.
 
 ## Quick Start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-compact-guard/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-rules-keeper/main/install.sh | bash
 ```
 
 That's it. Zero dependencies. Pure bash. Works on **macOS** and **Linux**.
 
 > **Or clone and install locally:**
 > ```bash
-> git clone https://github.com/sanztheo/claude-compact-guard.git
-> cd claude-compact-guard && ./install.sh
+> git clone https://github.com/sanztheo/claude-rules-keeper.git
+> cd claude-rules-keeper && ./install.sh
 > ```
 
 ## How It Works: 2-Layer Protection
 
-Unlike tools that rely on a single mechanism, claude-compact-guard stacks **two independent layers** to maximize compliance:
+Unlike tools that rely on a single mechanism, claude-rules-keeper stacks **two independent layers** to maximize compliance:
 
 ```
   LAYER 1: CLAUDE.md Rules (passive)          ~70% compliance alone
@@ -119,7 +119,7 @@ Unlike tools that rely on a single mechanism, claude-compact-guard stacks **two 
 
 ### What gets saved?
 
-Claude maintains a **structured snapshot** of your current work in `~/.claude/compact-guard/current-task.md`:
+Claude maintains a **structured snapshot** of your current work in `~/.claude/rules-keeper/current-task.md`:
 
 ```markdown
 # Current Task
@@ -142,20 +142,20 @@ The installer sets up everything automatically:
 | **CLAUDE.md rules** | `~/.claude/CLAUDE.md` (appended) | Passive layer - rules between guard markers |
 | **PreCompact hook** | `~/.claude/hooks/pre-compact.sh` | Creates backups before compaction |
 | **SessionStart hook** | `~/.claude/hooks/session-start.sh` | Injects context after compaction |
-| **ccg CLI** | `~/.local/bin/ccg` | Status, backups, restore, config |
+| **crk CLI** | `~/.local/bin/crk` | Status, backups, restore, config |
 | **Hook config** | `~/.claude/settings.json` (merged) | Registers hooks with Claude Code |
 
 ## CLI
 
-The `ccg` command gives you full control over your backups and task tracking.
+The `crk` command gives you full control over your backups and task tracking.
 
 ### Status Dashboard
 
 ```bash
-$ ccg status
+$ crk status
 ```
 ```
-claude-compact-guard v1.1.0
+claude-rules-keeper v1.1.0
 ===========================
 Last compaction:  2026-02-05 14:30 (auto) - 2h ago
 Total compactions: 7
@@ -168,32 +168,32 @@ Hooks:            pre-compact [OK]  session-start [OK]
 
 | Command | Description |
 |---|---|
-| `ccg status` | Dashboard: last compaction, task, backups, hook health |
-| `ccg task` | Show current task |
-| `ccg task set` | Set current task (opens `$EDITOR` or reads stdin) |
-| `ccg task clear` | Reset task to empty template |
-| `ccg backups` | List all backups with timestamps |
-| `ccg backups show` | Show the most recent backup |
-| `ccg restore` | Restore latest backup to current task |
-| `ccg config` | Show configuration |
-| `ccg config set <key> <value>` | Update a config value |
-| `ccg help` | Show help |
-| `ccg version` | Print version |
+| `crk status` | Dashboard: last compaction, task, backups, hook health |
+| `crk task` | Show current task |
+| `crk task set` | Set current task (opens `$EDITOR` or reads stdin) |
+| `crk task clear` | Reset task to empty template |
+| `crk backups` | List all backups with timestamps |
+| `crk backups show` | Show the most recent backup |
+| `crk restore` | Restore latest backup to current task |
+| `crk config` | Show configuration |
+| `crk config set <key> <value>` | Update a config value |
+| `crk help` | Show help |
+| `crk version` | Print version |
 
 ### Examples
 
 ```bash
 # Check installation status
-ccg status
+crk status
 
 # View the last saved context
-ccg backups show
+crk backups show
 
 # Restore context after a bad compaction
-ccg restore
+crk restore
 
 # Keep more backups
-ccg config set max_backups 20
+crk config set max_backups 20
 ```
 
 ## Configuration
@@ -209,7 +209,7 @@ ccg config set max_backups 20
 
 ```
 ~/.claude/
-├── compact-guard/
+├── rules-keeper/
 │   ├── backups/              # Rotating context snapshots
 │   │   ├── 2026-02-05_14-30-22.md
 │   │   └── 2026-02-05_16-45-10.md
@@ -241,7 +241,7 @@ ccg config set max_backups 20
 ## Uninstall
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-compact-guard/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sanztheo/claude-rules-keeper/main/uninstall.sh | bash
 ```
 
 Or locally: `./uninstall.sh`
@@ -292,7 +292,7 @@ The `SessionStart` hook detects when a session starts after compaction (via the 
 2. Create your feature branch (`git checkout -b feature/my-feature`)
 3. Ensure all scripts pass shellcheck:
    ```bash
-   shellcheck hooks/*.sh bin/ccg install.sh uninstall.sh
+   shellcheck hooks/*.sh bin/crk install.sh uninstall.sh
    ```
 4. Test the install/uninstall flow
 5. Open a Pull Request

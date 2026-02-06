@@ -4,7 +4,7 @@ set -euo pipefail
 # Session-start hook: injects saved context directly into Claude after compaction
 # Uses SessionStart's additionalContext — guaranteed injection, no marker files needed
 
-readonly GUARD_DIR="${HOME}/.claude/compact-guard"
+readonly GUARD_DIR="${HOME}/.claude/rules-keeper"
 readonly BACKUPS_DIR="${GUARD_DIR}/backups"
 readonly TASK_FILE="${GUARD_DIR}/current-task.md"
 

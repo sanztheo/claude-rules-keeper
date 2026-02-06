@@ -5,7 +5,7 @@ set -euo pipefail
 # Extracts context directly from the conversation transcript (guaranteed)
 # + saves current-task.md if it exists
 
-readonly GUARD_DIR="${HOME}/.claude/compact-guard"
+readonly GUARD_DIR="${HOME}/.claude/rules-keeper"
 readonly BACKUPS_DIR="${GUARD_DIR}/backups"
 readonly TASK_FILE="${GUARD_DIR}/current-task.md"
 readonly STATE_FILE="${GUARD_DIR}/state.json"

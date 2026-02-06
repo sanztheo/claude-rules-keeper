@@ -7,7 +7,7 @@ description: Use at the start of every conversation and before every task - main
 
 ## Overview
 
-You have **claude-compact-guard** installed. Your conversation context can be compacted at any time. To prevent losing progress, you MUST maintain `~/.claude/compact-guard/current-task.md` with your current state.
+You have **claude-rules-keeper** installed. Your conversation context can be compacted at any time. To prevent losing progress, you MUST maintain `~/.claude/rules-keeper/current-task.md` with your current state.
 
 ## When to Write
 
@@ -39,7 +39,7 @@ digraph context_guard {
 
 ## Format
 
-Write to `~/.claude/compact-guard/current-task.md`:
+Write to `~/.claude/rules-keeper/current-task.md`:
 
 ```markdown
 # Current Task

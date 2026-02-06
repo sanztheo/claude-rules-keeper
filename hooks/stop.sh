@@ -5,7 +5,7 @@ set -euo pipefail
 # before it can stop responding. This guarantees current-task.md is fresh
 # when compaction eventually happens.
 
-readonly GUARD_DIR="${HOME}/.claude/compact-guard"
+readonly GUARD_DIR="${HOME}/.claude/rules-keeper"
 readonly TASK_FILE="${GUARD_DIR}/current-task.md"
 # Threshold: force save when transcript > this size (bytes)
 # ~500KB of JSONL ≈ 70-80% context usage on a 200k token window
@@ -115,7 +115,7 @@ main() {
     cat <<'EOF'
 {
   "decision": "block",
-  "reason": "Context is getting large. Before stopping, write a concise summary to ~/.claude/compact-guard/current-task.md with this format:\n\n# Current Task\n\nObjective: [what the user wants - be specific]\nKey files: [files involved]\nDecisions made: [important architectural/design choices]\nRules to follow: [any coding standards or constraints discussed]\nLast action: [what was just completed]\nNext step: [what comes next]\n\n---\nUpdated: auto (pre-compaction save)\n\nKeep it under 15 lines. Focus on what matters to resume work after compaction."
+  "reason": "Context is getting large. Before stopping, write a concise summary to ~/.claude/rules-keeper/current-task.md with this format:\n\n# Current Task\n\nObjective: [what the user wants - be specific]\nKey files: [files involved]\nDecisions made: [important architectural/design choices]\nRules to follow: [any coding standards or constraints discussed]\nLast action: [what was just completed]\nNext step: [what comes next]\n\n---\nUpdated: auto (pre-compaction save)\n\nKeep it under 15 lines. Focus on what matters to resume work after compaction."
 }
 EOF
 }
