@@ -4,7 +4,7 @@ set -euo pipefail
 # crk - Claude Rules Keeper CLI
 # Manage context backups and task tracking for Claude Code
 
-readonly VERSION="1.2.0"
+readonly VERSION="1.3.0"
 readonly GUARD_DIR="${HOME}/.claude/rules-keeper"
 readonly BACKUPS_DIR="${GUARD_DIR}/backups"
 readonly TASK_FILE="${GUARD_DIR}/current-task.md"
@@ -169,6 +169,19 @@ get_task_summary() {
     else
         echo "\"${objective}\""
     fi
+}
+
+json_valid() {
+    local file="$1"
+    if command -v jq &>/dev/null; then
+        jq '.' "${file}" &>/dev/null && return 0
+    elif command -v python3 &>/dev/null; then
+        CRK_FILE="${file}" python3 -c "import json,os; json.load(open(os.environ['CRK_FILE']))" &>/dev/null && return 0
+    else
+        # Heuristic fallback: check opening and closing braces
+        grep -q '^{' "${file}" 2>/dev/null && grep -q '}' "${file}" 2>/dev/null && return 0
+    fi
+    return 1
 }
 
 # --- Commands ---
@@ -451,6 +464,177 @@ cmd_presets() {
     done <<< "${files}"
 }
 
+cmd_doctor() {
+    local pass=0
+    local total=0
+    local settings_file="${HOME}/.claude/settings.json"
+    local claude_md="${HOME}/.claude/CLAUDE.md"
+    local skill_file="${HOME}/.claude/skills/rules-keeper/SKILL.md"
+
+    doctor_check() {
+        local label="$1"
+        local result="$2"
+        total=$((total + 1))
+        if [[ "${result}" == "ok" ]]; then
+            pass=$((pass + 1))
+            echo -e "  ${GREEN}[OK]${RESET}   ${label}"
+        elif [[ "${result}" == "warn" ]]; then
+            echo -e "  ${YELLOW}[WARN]${RESET} ${label}"
+        else
+            echo -e "  ${RED}[FAIL]${RESET} ${label}"
+        fi
+    }
+
+    echo -e "${BOLD}crk doctor${RESET}"
+    echo "=========="
+
+    # 1. Rules-keeper directory
+    if [[ -d "${GUARD_DIR}" ]]; then
+        doctor_check "Rules-keeper directory" "ok"
+    else
+        doctor_check "Rules-keeper directory" "fail"
+    fi
+
+    # 2. Backups directory
+    if [[ -d "${BACKUPS_DIR}" ]]; then
+        doctor_check "Backups directory" "ok"
+    else
+        doctor_check "Backups directory" "fail"
+    fi
+
+    # 3. PreCompact hook
+    if [[ -f "${HOOKS_DIR}/pre-compact.sh" && -x "${HOOKS_DIR}/pre-compact.sh" ]]; then
+        doctor_check "PreCompact hook (executable)" "ok"
+    elif [[ -f "${HOOKS_DIR}/pre-compact.sh" ]]; then
+        doctor_check "PreCompact hook (not executable)" "warn"
+    else
+        doctor_check "PreCompact hook" "fail"
+    fi
+
+    # 4. SessionStart hook
+    if [[ -f "${HOOKS_DIR}/session-start.sh" && -x "${HOOKS_DIR}/session-start.sh" ]]; then
+        doctor_check "SessionStart hook (executable)" "ok"
+    elif [[ -f "${HOOKS_DIR}/session-start.sh" ]]; then
+        doctor_check "SessionStart hook (not executable)" "warn"
+    else
+        doctor_check "SessionStart hook" "fail"
+    fi
+
+    # 5. settings.json: PreCompact registered
+    if [[ -f "${settings_file}" ]] && grep -q "pre-compact.sh" "${settings_file}" 2>/dev/null; then
+        doctor_check "settings.json: PreCompact registered" "ok"
+    else
+        doctor_check "settings.json: PreCompact registered" "fail"
+    fi
+
+    # 6. settings.json: SessionStart (compact matcher)
+    if [[ -f "${settings_file}" ]] && grep -q '"matcher"' "${settings_file}" 2>/dev/null && grep -q "session-start.sh" "${settings_file}" 2>/dev/null; then
+        doctor_check "settings.json: SessionStart (compact)" "ok"
+    else
+        doctor_check "settings.json: SessionStart (compact)" "fail"
+    fi
+
+    # 7. settings.json: SessionStart (cleanup — two entries for session-start.sh)
+    local ss_count=0
+    if [[ -f "${settings_file}" ]]; then
+        ss_count=$(grep -c "session-start.sh" "${settings_file}" 2>/dev/null) || ss_count=0
+    fi
+    if [[ "${ss_count}" -ge 2 ]]; then
+        doctor_check "settings.json: SessionStart (cleanup)" "ok"
+    else
+        doctor_check "settings.json: SessionStart (cleanup)" "fail"
+    fi
+
+    # 8. CLAUDE.md guard markers
+    if [[ -f "${claude_md}" ]] && grep -q "CLAUDE-RULES-KEEPER:START" "${claude_md}" 2>/dev/null; then
+        doctor_check "CLAUDE.md guard markers" "ok"
+    else
+        doctor_check "CLAUDE.md guard markers" "fail"
+    fi
+
+    # 9. Skill installed
+    if [[ -f "${skill_file}" ]]; then
+        doctor_check "Skill rules-keeper installed" "ok"
+    else
+        doctor_check "Skill rules-keeper installed" "fail"
+    fi
+
+    # 10. crk in PATH
+    if command -v crk &>/dev/null; then
+        doctor_check "crk in PATH" "ok"
+    else
+        doctor_check "crk in PATH" "fail"
+    fi
+
+    # 11. rules.md
+    if [[ -f "${RULES_FILE}" ]]; then
+        doctor_check "rules.md exists" "ok"
+    else
+        doctor_check "rules.md exists" "fail"
+    fi
+
+    # 12. config.json valid
+    if [[ -f "${CONFIG_FILE}" ]] && json_valid "${CONFIG_FILE}"; then
+        doctor_check "config.json valid" "ok"
+    else
+        doctor_check "config.json valid" "fail"
+    fi
+
+    # 13. state.json valid
+    if [[ -f "${STATE_FILE}" ]] && json_valid "${STATE_FILE}"; then
+        doctor_check "state.json valid" "ok"
+    else
+        doctor_check "state.json valid" "fail"
+    fi
+
+    echo ""
+    if [[ "${pass}" -eq "${total}" ]]; then
+        echo -e "${GREEN}${pass}/${total} checks passed${RESET}"
+    else
+        echo -e "${YELLOW}${pass}/${total} checks passed${RESET}"
+    fi
+}
+
+cmd_upgrade() {
+    local repo_url="https://raw.githubusercontent.com/sanztheo/claude-rules-keeper/main"
+
+    echo -e "${BOLD}Checking for updates...${RESET}"
+
+    local remote_version=""
+    remote_version=$(curl -fsSL "${repo_url}/bin/crk" 2>/dev/null | grep -m1 'readonly VERSION=' | sed 's/.*"\(.*\)".*/\1/') || true
+
+    if [[ -z "${remote_version}" ]]; then
+        echo -e "${RED}Could not fetch remote version. Check your internet connection.${RESET}"
+        return 1
+    fi
+
+    echo -e "  Local:  v${VERSION}"
+    echo -e "  Remote: v${remote_version}"
+    echo ""
+
+    if [[ "${VERSION}" == "${remote_version}" ]]; then
+        echo -e "${GREEN}Already up to date (v${VERSION})${RESET}"
+        return 0
+    fi
+
+    echo -n "Upgrade to v${remote_version}? [y/N] "
+    local answer=""
+    if [[ -t 0 ]]; then
+        read -r answer
+    else
+        answer="y"
+        echo "y (non-interactive)"
+    fi
+
+    if [[ "${answer}" != "y" && "${answer}" != "Y" ]]; then
+        echo -e "${DIM}Upgrade cancelled.${RESET}"
+        return 0
+    fi
+
+    echo -e "Upgrading v${VERSION} → v${remote_version}..."
+    curl -fsSL "${repo_url}/install.sh" | bash
+}
+
 cmd_help() {
     echo -e "${BOLD}claude-rules-keeper v${VERSION}${RESET}"
     echo ""
@@ -468,6 +652,8 @@ cmd_help() {
     echo "  restore         Copy latest backup to current-task.md"
     echo "  config          Show config"
     echo "  config set K V  Update config value"
+    echo "  doctor          Run diagnostic checks on installation"
+    echo "  upgrade         Check for updates and upgrade"
     echo "  help            Show this help"
     echo "  version         Print version"
     echo ""
@@ -518,6 +704,12 @@ main() {
                 "")     cmd_config ;;
                 *)      echo -e "${RED}Unknown config subcommand: ${subcmd}${RESET}"; cmd_help; return 1 ;;
             esac
+            ;;
+        doctor)
+            cmd_doctor
+            ;;
+        upgrade)
+            cmd_upgrade
             ;;
         help|--help|-h)
             cmd_help

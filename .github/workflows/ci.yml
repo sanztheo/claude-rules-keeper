@@ -17,3 +17,14 @@ jobs:
 
       - name: Run shellcheck on scripts
         run: shellcheck hooks/*.sh install.sh uninstall.sh bin/crk
+
+  bats:
+    runs-on: ubuntu-latest
+    needs: shellcheck
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Run bats tests
+        run: ./tests/bats/bin/bats tests/*.bats

@@ -7,7 +7,7 @@
   <p align="center">
     <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
     <a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/Made%20with-Bash-1f425f.svg" alt="Bash"></a>
-    <a href="https://github.com/sanztheo/claude-rules-keeper/releases"><img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version"></a>
+    <a href="https://github.com/sanztheo/claude-rules-keeper/releases"><img src="https://img.shields.io/badge/version-1.3.0-blue.svg" alt="Version"></a>
     <a href="https://github.com/sanztheo/claude-rules-keeper/actions"><img src="https://github.com/sanztheo/claude-rules-keeper/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
     <a href="https://github.com/sanztheo/claude-rules-keeper"><img src="https://img.shields.io/github/stars/sanztheo/claude-rules-keeper?style=social" alt="GitHub Stars"></a>
   </p>
@@ -200,7 +200,7 @@ The `crk` command gives you full control over your backups and task tracking.
 $ crk status
 ```
 ```
-claude-rules-keeper v1.2.0
+claude-rules-keeper v1.3.0
 ===========================
 Last compaction:  2026-02-05 14:30 (auto) - 2h ago
 Total compactions: 7
@@ -224,6 +224,8 @@ Hooks:            pre-compact [OK]  session-start [OK]
 | `crk config set <key> <value>` | Update a config value |
 | `crk rules` | Show all active rules (session + global + project) |
 | `crk presets` | List saved rule presets |
+| `crk doctor` | Run diagnostic checks on installation |
+| `crk upgrade` | Check for updates and upgrade |
 | `crk help` | Show help |
 | `crk version` | Print version |
 
@@ -362,8 +364,12 @@ The `SessionStart` hook detects compaction via the `"compact"` matcher. It injec
    ```bash
    shellcheck hooks/*.sh bin/crk install.sh uninstall.sh
    ```
-4. Test the install/uninstall flow
-5. Open a Pull Request
+4. Run the tests:
+   ```bash
+   ./tests/bats/bin/bats tests/*.bats
+   ```
+5. Test the install/uninstall flow
+6. Open a Pull Request
 
 ## License
 
