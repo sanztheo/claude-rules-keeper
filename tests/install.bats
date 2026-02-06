@@ -72,6 +72,9 @@ teardown() {
     [ -f "${HOME}/.claude/commands/rules.md" ]
     [ -f "${HOME}/.claude/commands/rules-global.md" ]
     [ -f "${HOME}/.claude/commands/rules-create.md" ]
+    [ -f "${HOME}/.claude/commands/rules-doctor.md" ]
+    [ -f "${HOME}/.claude/commands/rules-upgrade.md" ]
+    [ -f "${HOME}/.claude/commands/rules-status.md" ]
 }
 
 @test "install creates config.json" {
